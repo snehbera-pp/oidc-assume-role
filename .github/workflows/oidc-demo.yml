@@ -1,0 +1,31 @@
+name: oidc-demo
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write   # lets the job request the GitHub token
+  contents: read
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::501046919017:role/github-oidc-demo-role
+          role-session-name: gha-oidc-demo
+          aws-region: ap-south-1
+
+      - name: Who am I?
+        run: aws sts get-caller-identity
+
+      - name: Upload a file to S3
+        run: |
+          echo "Hello from GitHub Actions at $(date)" > hello.txt
+          aws s3 cp hello.txt s3://oidc-demo-sb-learning/hello.txt
+          aws s3 ls s3://oidc-demo-sb-learning/ 
