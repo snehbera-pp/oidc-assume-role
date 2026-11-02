@@ -19,7 +19,7 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::501046919017:role/github-oidc-demo-role
           role-session-name: gha-oidc-demo
-          aws-region: ap-south-1
+          aws-region: us-east-1
 
       - name: Who am I?
         run: aws sts get-caller-identity
