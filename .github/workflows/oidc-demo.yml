@@ -1,12 +1,7 @@
 name: oidc-demo
-
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
-# Permissions required for GitHub OIDC authentication
 permissions:
   id-token: write
   contents: read
@@ -14,50 +9,21 @@ permissions:
 jobs:
   demo:
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Checkout repository
-      - name: Checkout repository
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
 
-      # Step 2: Debug OIDC claims
-      - name: Debug OIDC claims
-        run: |
-          TOKEN=$(curl -sS \
-            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" \
-            | jq -r .value)
-
-          echo "::add-mask::$TOKEN"
-
-          echo "$TOKEN" | python3 -c "
-          import sys, json, base64
-          p = sys.stdin.read().strip().split('.')[1]
-          p += '=' * (-len(p) % 4)
-          c = json.loads(base64.urlsafe_b64decode(p))
-          print(json.dumps({
-              k: c.get(k)
-              for k in ['iss', 'aud', 'sub', 'ref', 'repository']
-          }, indent=2))
-          "
-
-      # Step 3: Configure AWS credentials using OIDC
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: arn:aws:iam::501046919017:role/github-oidc-demo-role
-          role-session-name: gha-oidc-demo
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          role-session-name: oidc-demo-sneh-bera
           aws-region: us-east-1
 
-      # Step 4: Verify AWS identity
       - name: Who am I?
         run: aws sts get-caller-identity
 
-      # Step 5: Upload file to S3
       - name: Upload a file to S3
         run: |
-          echo "Hello from GitHub Actions at $(date)" > hello.txt
-
-          aws s3 cp hello.txt s3://oidc-demo-sb-learning/hello.txt
-
-          aws s3 ls s3://oidc-demo-sb-learning/
+          echo "Hello from Terraform-built role at $(date)" > hello.txt
+          aws s3 cp hello.txt s3://${{ vars.AWS_BUCKET }}/hello.txt
+          aws s3 ls s3://${{ vars.AWS_BUCKET }}/

@@ -1,0 +1,28 @@
+# Local .terraform directories and dependency locks
+**/.terraform/*
+.terraform.lock.hcl
+
+# Main state file and its backups
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Exclude all variable files as they can contain sensitive data/secrets
+*.tfvars
+*.tfvars.json
+
+# Exclude override files as they are usually used for local adjustments
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Include override files you explicitly wish to add to version control
+# !example_override.tf
+
+# CLI configuration files
+.terraformrc
+terraform.rc
